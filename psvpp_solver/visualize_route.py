@@ -1,25 +1,56 @@
-def visualize_route(route):
+def visualize_route(genome, n_days=4):
+    """
+    Plot graph of tours for each vessel for each day in genome
+    """
+    import networkx as nx
     import numpy as np
-    from graphviz import Graph
+    import matplotlib.pyplot as plt
 
-    # Instantiate a new Graph object
-    dot = Graph('Data Science Process', format='png')
+    n_vessels = len(genome[2])
 
-    # Add nodes
-    for i in range(5):
-        dot.node(str(i), str(i))
+    fig, ax = plt.subplots(n_vessels, n_days)
 
-    # dot.node('A', 'Get Data')
-    # dot.node('B', 'Clean, Prepare, & Manipulate Data')
-    # dot.node('C', 'Train Model')
-    # dot.node('D', 'Test Data')
-    # dot.node('E', 'Improve')
+    for day in range(n_days):
+        for vessel in range(n_vessels):
+            # Just one day
+            G = nx.DiGraph()
+            nodes = np.arange(0, len(genome[1])).tolist()
+            G.add_nodes_from(nodes)
 
-    # Connect these nodes
-    dot.edges(['01', '12', '20', '03', '34', '40'])
+            day_routes = genome[0][vessel][day]
 
-    # Save chart
-    dot.render('data_science_flowchart', view=True)
+            # Add departure from base
+            if (len(day_routes) > 0):
+                out = []
+                out.append((0, day_routes[0]))
+
+                for i in range(1, len(day_routes)):
+                    out.append((day_routes[i-1], day_routes[i]))
+
+                # Add return to base
+                out.append((out[-1][-1], 0))
+
+                G.add_edges_from(out)
+
+            pos = {0: (1, 0)}
+
+            # Position of installations
+            for i in range(1, len(genome[1]) + 1):
+                pos[i] = (0.5 + i % 2 + i*0.1,
+                          1 + np.floor(i / 2))
+
+            nx.draw_networkx(G,
+                             pos=pos,
+                             arrows=True,
+                             node_shape="s",
+                             node_color="white",
+                             ax=ax[vessel, day])
+
+            ax[vessel, day].set_title(
+                "PVS: "+str(vessel) + " Day: " + str(day))
+# plt.savefig("Output/plain organogram using networkx.jpeg",
+#             dpi=300)
+    plt.show()
 
 
 if __name__ == "__main__":
@@ -37,13 +68,13 @@ if __name__ == "__main__":
     ]
 
     parent_2 = [
-        # tour
-        [[[1, 2], [],     [4, 3, 2], []],
+        # tour [PSV][day]
+        [[[1, 2, 4], [],     [4, 3, 2], []],
          [[],     [3, 4], [],        [1, 2]]
          ],
-        # installations
+        # installations [instsallation][day visited]
         [[1, 4], [1, 3, 4], [2, 3], [2, 3]],
-        # vessels
+        # vessels [vessel][day departing]
         [[1, 3], [2, 4]]
     ]
     visualize_route(parent_2)
