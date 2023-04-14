@@ -1,7 +1,7 @@
 # PSVPP-solver
 
-[![PyPI - Version](https://img.shields.io/pypi/v/psvpp-solver.svg)](https://pypi.org/project/psvpp-solver)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/psvpp-solver.svg)](https://pypi.org/project/psvpp-solver)
+<!-- [![PyPI - Version](https://img.shields.io/pypi/v/psvpp-solver.svg)](https://pypi.org/project/psvpp-solver) -->
+<!-- [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/psvpp-solver.svg)](https://pypi.org/project/psvpp-solver) -->
 
 -----
 
