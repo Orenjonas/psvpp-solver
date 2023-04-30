@@ -9,19 +9,17 @@ readme = "README.md"
 requires-python = ">=3.7"
 license = "MIT"
 keywords = []
-authors = [
-  { name = "Jonas Oren", email = "jonas.oren@gmail.com" },
-]
+authors = [{ name = "Jonas Oren", email = "jonas.oren@gmail.com" }]
 classifiers = [
-  "Development Status :: 4 - Beta",
-  "Programming Language :: Python",
-  "Programming Language :: Python :: 3.7",
-  "Programming Language :: Python :: 3.8",
-  "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: Implementation :: CPython",
-  "Programming Language :: Python :: Implementation :: PyPy",
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = ["numpy"]
 dynamic = ["version"]
@@ -35,11 +33,7 @@ Source = "https://github.com/unknown/psvpp-solver"
 path = "psvpp_solver/__about__.py"
 
 [tool.hatch.envs.default]
-dependencies = [
-  "pytest",
-  "pytest-cov",
-  "graphviz"
-]
+dependencies = ["pytest", "pytest-cov", "graphviz"]
 [tool.hatch.envs.default.scripts]
 cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=psvpp_solver --cov=tests {args}"
 no-cov = "cov --no-cov {args}"
@@ -50,23 +44,13 @@ python = ["37", "38", "39", "310", "311"]
 [tool.coverage.run]
 branch = true
 parallel = true
-omit = [
-  "psvpp_solver/__about__.py",
-]
+omit = ["psvpp_solver/__about__.py"]
 
 [tool.coverage.report]
-exclude_lines = [
-  "no cov",
-  "if __name__ == .__main__.:",
-  "if TYPE_CHECKING:",
-]
+exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
 
 [project.optional-dependencies]
-dev = [
- "ipython",
- "matplotlib",
- "networkx",
-]
+dev = ["ipython", "matplotlib", "networkx", "pandas"]
 # test = [
 #     "pytest-cov ~=3.0.0",
 # ]
