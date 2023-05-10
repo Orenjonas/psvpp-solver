@@ -1,8 +1,6 @@
-from numba import int64, njit
 import numpy as np
 
 
-@njit
 def generate_visits_from_routes(routes: np.ndarray,
                                 n_installations: int,
                                 n_days_in_period: int) -> np.ndarray:
