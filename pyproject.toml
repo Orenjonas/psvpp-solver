@@ -1,56 +1,35 @@
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[project]
+[tool.poetry]
 name = "psvpp-solver"
-description = ''
+version = "0.1.0"
+description = "Solver for creating optimal schedules for periodic supply vessels"
+authors = ["Jonas Oren <jonas.oren@gmail.com>"]
+license = "MIT License"
 readme = "README.md"
-requires-python = ">=3.7"
-license = "MIT"
-keywords = []
-authors = [{ name = "Jonas Oren", email = "jonas.oren@gmail.com" }]
-classifiers = [
-    "Development Status :: 4 - Beta",
-    "Programming Language :: Python",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: Implementation :: CPython",
-    "Programming Language :: Python :: Implementation :: PyPy",
-]
-dependencies = ["numpy"]
-dynamic = ["version"]
+packages = [{ include = "psvpp_solver" }]
 
-[project.urls]
-Documentation = "https://github.com/unknown/psvpp-solver#readme"
-Issues = "https://github.com/unknown/psvpp-solver/issues"
-Source = "https://github.com/unknown/psvpp-solver"
+[tool.poetry.dependencies]
+python = "^3.10"
 
-[tool.hatch.version]
-path = "psvpp_solver/__about__.py"
+[tool.poetry.group.test] # This part can be left out
 
-[tool.hatch.envs.default]
-dependencies = ["pytest", "pytest-cov", "graphviz"]
-[tool.hatch.envs.default.scripts]
-cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=psvpp_solver --cov=tests {args}"
-no-cov = "cov --no-cov {args}"
+[tool.poetry.group.test.dependencies]
+pytest = "^7.3.1"
+pytest-cov = "^4.0.0"
 
-[[tool.hatch.envs.test.matrix]]
-python = ["37", "38", "39", "310", "311"]
 
-[tool.coverage.run]
-branch = true
-parallel = true
-omit = ["psvpp_solver/__about__.py"]
+[tool.poetry.group.dev.dependencies]
+numpy = "*"
+matplotlib = "^3.7.1"
+networkx = "^3.1"
+numba = "^0.56.4"
+ipython = "^8.13.1"
+ptpython = "^3.0.23"
+ptipython = "^1.0.1"
+jupyter = "^1.0.0"
 
-[tool.coverage.report]
-exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
-[project.optional-dependencies]
-dev = ["ipython", "matplotlib", "networkx", "pandas"]
-# test = [
-#     "pytest-cov ~=3.0.0",
-# ]
+# TODO: For matplotlib
+# sudo apt-get install python3-tk
