@@ -14,7 +14,7 @@ def visualize_route(genome, n_days=4):
         for vessel in range(n_vessels):
             # Just one day
             G = nx.DiGraph()
-            nodes = np.arange(0, len(genome[1])).tolist()
+            nodes = np.arange(0, len(genome[1]) + 1).tolist()
             G.add_nodes_from(nodes)
 
             day_routes = genome[0][vessel][day]
@@ -34,7 +34,7 @@ def visualize_route(genome, n_days=4):
 
             pos = {0: (1, 0)}
 
-            # Position of installations
+            # Position of installations - spread positions upwards from base
             for i in range(1, len(genome[1]) + 1):
                 pos[i] = (0.5 + i % 2 + i*0.1,
                           1 + np.floor(i / 2))
@@ -77,4 +77,4 @@ if __name__ == "__main__":
         # vessels [vessel][day departing]
         [[1, 3], [2, 4]]
     ]
-    visualize_route(parent_2)
+    visualize_route(parent_1)
