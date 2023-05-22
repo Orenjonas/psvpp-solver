@@ -32,11 +32,11 @@ def generate_visits_from_routes(routes: np.ndarray,
                       [0, 1, 0, 1]]
     """
     installation_visits = np.ndarray(shape=(n_installations, n_days_in_period),
-                                     dtype=int)
+                                     dtype=bool)
 
-    for inst in range(1, n_installations + 1):
+    for inst in range(n_installations):
         # TODO: Check if more than one visit to same installatio in a day?
-        installation_visits[inst] = (routes == inst).any(axis=(0, 2))
+        installation_visits[inst] = (routes == (inst + 1)).any(axis=(0, 2))
 
     return installation_visits
 

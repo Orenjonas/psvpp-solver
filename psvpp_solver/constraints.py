@@ -1,22 +1,44 @@
+import numpy as np
+
 
 def check_constraints_satisfied(
-    genome: list[list[int]],
-    # TODO - change to len(period)
-    days_in_period=[1, 2, 3, 4, 5, 6, 7],
-    days_vessel_available: list[int] = [7, 5],
-    max_v_prepared: list[int] = [2, 2, 2, 2, 2, 1, 1],
-    max_psv_prepared_per_day: int = 2,
-    departures_each_day: list[int] = [0, 0, 0, 0, 0, 0, 0],
-        required_frequencies: list[int] = [2, 3, 2, 2]) -> bool:
+        routes: np.ndarray,
+        visits: np.ndarray,
+        departures: np.ndarray,
+        required_frequencies=np.array([2, 3, 2, 2]),
+        max_v_prepared=np.array([2, 2, 2, 1]),
+        n_days_available=np.array([2, 2]),
+        days_in_period=4,
+        # days_vessel_available: list[int] = [7, 5],
+        # max_psv_prepared_per_day: int = 2,
+) -> bool:
     """
     Check that the given schedule passes the given constraints.
 
+        routes =  [[[1 2 0 0]
+                    [0 0 0 0]
+                    [4 3 2 0]
+                    [0 0 0 0]]
+
+                   [[0 0 0 0]
+                    [3 4 0 0]
+                    [0 0 0 0]
+                    [1 2 0 0]]]
+
+         visits = [[1 0 0 1]
+                   [1 0 1 1]
+                   [0 1 1 0]
+                   [0 1 1 0]]
+         departures = [[1 0 1 0]
+                       [0 1 0 1]]
+
      Constraints:
-        - Sailling distance?
+         - Sailling distance?
         - Duration
         - Number of installations
         - Deck capacity
         For all periodic supply vessels (PSVs)
+
 
     Args:
         genome: TODO
@@ -28,51 +50,57 @@ def check_constraints_satisfied(
             prepare for departure in day i, list of len n_days.
     """
     # (2) Ensure the required service frequency for each installation
-    for inst, services in enumerate(genome[1]):
-        n_visits = len(services)
-        if n_visits < required_frequencies[inst]:
-            print('Service frequency for installation', inst,
-                  'not satisfied')
-            print("Genome:", genome)
-            return False
+
+    if (not np.array_equal(visits.sum(axis=1),  # visit frequency
+                           required_frequencies)):
+        # Abort if service frequency requirement not met.
+
+        print('Service frequency for installation(s)',
+              np.where(~np.equal(visits.sum(axis=1), visits.sum(axis=1)))[0],
+              'not satisfied')
+        print("routes", routes,
+              "visits", visits*1,
+              "departures", departures*1,
+              sep="\n"
+              )
+        return False
 
     # (3) Ensure PSVs do not sail more days than allowed
+    # Assumes any voyage takes one day
+    days_chartered = np.array(routes[:, :, 0] > 0, dtype=bool).sum(axis=1)
 
-    for psv, voyages in enumerate(genome[0]):
-        len_voyages = 0
+    if (np.any(days_chartered > n_days_available)):
 
-        for voyage in voyages:
-            len_voyages += len(voyage)
-
-        if len_voyages > days_vessel_available[psv]:
-            print('Constraint not satisfied: Supply vessel {psv} sails '
-                  '{len_voyages} days but is available only {max_days} days'
-                  '.'.format(psv=psv,
-                             max_days=days_vessel_available[psv],
-                             len_voyages=len_voyages)
-                  )
-            print("Genome:", genome)
-            return False
+        print('Vessel(s)',
+              np.where(days_chartered > n_days_available)[0],
+              'sails more days than they are available.')
+        print("routes", routes,
+              "visits", visits*1,
+              "departures", departures*1,
+              sep="\n"
+              )
+        return False
 
     # (4) Restict the number of PSVs prepared at the supply depot
-    for psv, departures in enumerate(genome[2]):
-        for day in departures:
-            # Day starts count on 1. List index will be `day-1`
-            departures_each_day[day-1] += 1
-            if departures_each_day[day] > max_psv_prepared_per_day:
-                print('Too many vessels serviced on day', day)
-                print("Genome:", genome)
-                return False
+    if np.any(departures.sum(axis=0) > max_v_prepared):
+        print('Too many departures on day(s))',
+              np.where(departures.sum(axis=0) > max_v_prepared)[0])
+        print("routes", routes,
+              "visits", visits*1,
+              "departures", departures*1,
+              sep="\n"
+              )
+        return False
 
     # (5) PSV cannot begin a voyage before returning from its previous one
     prev_depart = None
-    for psv, departures in enumerate(genome[2]):
-
-        # First check difference between last and first departure in the period
-        prev_depart = departures[-1] - len(days_in_period)
-        for departure_day in departures:
+    for vessel, departures_v in enumerate(departures):
+        # Translate to day of departure
+        departures_v = np.where(departures_v)[0]
+        prev_depart = departures_v[-1] - days_in_period
+        for departure_day in departures_v:
             # Assumes all journeys are 1 day long and can sail the day after
-            # returning.
+            #  returning.
 
             # Check that there is one day between departures
             if departure_day - prev_depart < 1:
@@ -82,40 +110,47 @@ def check_constraints_satisfied(
                                  departure_day=departure_day,
                                  psv=psv,)
                       )
-                print("Genome:", genome)
+                print("routes", routes,
+                      "visits", visits*1,
+                      "departures", departures*1,
+                      sep="\n"
+                      )
                 return False
+
             prev_depart = departure_day
 
     # (6) Make sure departures to each installation are properly spread
-    for inst, services in enumerate(genome[1]):
+    for inst, services in enumerate(visits):
+        # TODO: extract to numba function
+
+        # Translate to day visited
+        services = np.where(services)[0]
+
         # Min and max distance between visits
         f = required_frequencies[inst]
-        # df = len(days_in_period) / (f+1)
-        Pf_min = len(days_in_period) // (f+1)
+
+        # df = days_in_period / (f+1)
+        Pf_min = days_in_period // (f+1)
         Pf_max = Pf_min + 1
-        # Pf_min = f // df
-        # Pf_max = f // df + 1
 
-        # TODO: check [3, 4] and [1,3,4]
-
-        # What if only one visit? [1]
-
-        prev = services[-1] - len(days_in_period)
+        prev = services[-1] - days_in_period
         for day in services:
             # Check diff within constraints
-            # TODO: Check definition of time between visits
             days_between = day - prev - 1  # Number of days between services
             if days_between < Pf_min or days_between > Pf_max:
                 # from IPython import embed
                 # embed()
                 print('day', day, 'prev', prev)
-                print('Services not sufficiently spread for  installation', inst)
-                print("Genome:", genome)
+                print('Services not sufficiently spread for  installation',
+                      inst)
+                print("routes", routes,
+                      "visits", visits*1,
+                      "departures", departures*1,
+                      sep="\n"
+                      )
                 return False
 
             prev = day
-
-    # (7) Variable domains
 
 
 if __name__ == "__main__":
