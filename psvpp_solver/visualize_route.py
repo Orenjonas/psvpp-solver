@@ -1,4 +1,6 @@
-def visualize_route(genome, n_days=4):
+def visualize_route(routes,
+                    visits,
+                    n_days=4):
     """
     Plot graph of tours for each vessel for each day in genome
     """
@@ -6,7 +8,8 @@ def visualize_route(genome, n_days=4):
     import numpy as np
     import matplotlib.pyplot as plt
 
-    n_vessels = len(genome[2])
+    n_vessels = len(routes)
+    n_installations = len(visits)
 
     fig, ax = plt.subplots(n_vessels, n_days)
 
@@ -14,10 +17,10 @@ def visualize_route(genome, n_days=4):
         for vessel in range(n_vessels):
             # Just one day
             G = nx.DiGraph()
-            nodes = np.arange(0, len(genome[1]) + 1).tolist()
+            nodes = np.arange(0, n_installations + 1).tolist()
             G.add_nodes_from(nodes)
 
-            day_routes = genome[0][vessel][day]
+            day_routes = routes[vessel][day]
 
             # Add departure from base
             if (len(day_routes) > 0):
@@ -35,7 +38,7 @@ def visualize_route(genome, n_days=4):
             pos = {0: (1, 0)}
 
             # Position of installations - spread positions upwards from base
-            for i in range(1, len(genome[1]) + 1):
+            for i in range(1, len(visits) + 1):
                 pos[i] = (0.5 + i % 2 + i*0.1,
                           1 + np.floor(i / 2))
 
