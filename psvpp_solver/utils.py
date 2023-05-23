@@ -35,7 +35,7 @@ def generate_visits_from_routes(routes: np.ndarray,
                                      dtype=bool)
 
     for inst in range(n_installations):
-        # TODO: Check if more than one visit to same installatio in a day?
+        # TODO: Check if more than one visit to same installation in a day?
         installation_visits[inst] = (routes == (inst + 1)).any(axis=(0, 2))
 
     return installation_visits
@@ -69,8 +69,5 @@ def generate_departures_from_routes(routes: np.ndarray) -> np.ndarray:
     departure_days = [[1, 0, 0, 1],  # [1, 4]
                       [0, 1, 0, 1]]  # [2, 4]
     """
-    # departure_days = np.darray(shape=(n_vessels, n_days_in_period),
-    #                             dtype=bool)
-    departure_days = np.array(routes[:, :, 0] > 0, dtype=bool)
 
-    return departure_days
+    return np.array(routes[:, :, 0] > 0, dtype=bool)

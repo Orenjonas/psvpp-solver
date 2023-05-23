@@ -49,15 +49,15 @@ def check_constraints_satisfied(
         max_v_prepared (list[int]): How many vessels the installations can
             prepare for departure in day i, list of len n_days.
     """
-    # (2) Ensure the required service frequency for each installation
+    # (2) Ensure the correct service frequency for each installation
 
     if (not np.array_equal(visits.sum(axis=1),  # visit frequency
                            required_frequencies)):
-        # Abort if service frequency requirement not met.
-
+        # Abort if service frequency requirement not correct.
         print('Service frequency for installation(s)',
-              np.where(~np.equal(visits.sum(axis=1), visits.sum(axis=1)))[0],
-              'not satisfied')
+              np.where(~np.equal(visits.sum(axis=1),
+                       required_frequencies))[0] + 1,
+              'not correct')
         print("routes", routes,
               "visits", visits*1,
               "departures", departures*1,
@@ -72,7 +72,7 @@ def check_constraints_satisfied(
     if (np.any(days_chartered > n_days_available)):
 
         print('Vessel(s)',
-              np.where(days_chartered > n_days_available)[0],
+              np.where(days_chartered > n_days_available)[0] + 1,
               'sails more days than they are available.')
         print("routes", routes,
               "visits", visits*1,
@@ -84,7 +84,7 @@ def check_constraints_satisfied(
     # (4) Restict the number of PSVs prepared at the supply depot
     if np.any(departures.sum(axis=0) > max_v_prepared):
         print('Too many departures on day(s))',
-              np.where(departures.sum(axis=0) > max_v_prepared)[0])
+              np.where(departures.sum(axis=0) > max_v_prepared)[0] + 1)
         print("routes", routes,
               "visits", visits*1,
               "departures", departures*1,
@@ -105,10 +105,10 @@ def check_constraints_satisfied(
             # Check that there is one day between departures
             if departure_day - prev_depart < 1:
                 print("Not enough time between journeys departing on day "
-                      "{prev_depart} and {departure_day}, for psv {psv}"
-                      ".".format(prev_depart=prev_depart,
-                                 departure_day=departure_day,
-                                 psv=psv,)
+                      "{prev_depart} and {departure_day}, for psv {vessel}"
+                      ".".format(prev_depart=prev_depart + 1,
+                                 departure_day=departure_day + 1,
+                                 vessel=vessel + 1,)
                       )
                 print("routes", routes,
                       "visits", visits*1,
@@ -127,22 +127,17 @@ def check_constraints_satisfied(
         services = np.where(services)[0]
 
         # Min and max distance between visits
-        f = required_frequencies[inst]
-
-        # df = days_in_period / (f+1)
-        Pf_min = days_in_period // (f+1)
-        Pf_max = Pf_min + 1
+        Pf_max = days_in_period // required_frequencies[inst]
+        Pf_min = Pf_max - 1
 
         prev = services[-1] - days_in_period
         for day in services:
             # Check diff within constraints
             days_between = day - prev - 1  # Number of days between services
             if days_between < Pf_min or days_between > Pf_max:
-                # from IPython import embed
-                # embed()
                 print('day', day, 'prev', prev)
                 print('Services not sufficiently spread for  installation',
-                      inst)
+                      inst + 1)
                 print("routes", routes,
                       "visits", visits*1,
                       "departures", departures*1,
@@ -152,37 +147,5 @@ def check_constraints_satisfied(
 
             prev = day
 
-
-if __name__ == "__main__":
-
-    #     genome = [
-    #         # tour [PSV][day] -> installations
-    #         [[[1, 2], [],     [4, 3, 2], []],
-    #          [[],     [3, 4], [],        [1, 2]]
-    #          ],
-    #         # installations [instsallation] -> day visited
-    #         [[1, 4], [1, 3, 4], [2, 3], [2, 3]],
-    #         # vessels [vessel] -> day departing
-    #         [[1, 3], [2, 4]]
-    #     ]
-
-    genome = [
-        # tour [PSV][day] -> installations
-        [[[1, 2], [],     [4, 3, 2], []],
-         [[],     [3, 4], [],        [1, 2]]
-         ],
-        # installations [instsallation] -> day visited
-        [[1, 4], [1, 3, 5], [2, 3], [2, 3]],
-        # vessels [vessel] -> day departing
-        [[1, 4], [2, 4]]
-    ]
-
-    # installations[installation][required service frequency]
-    installation_service_frequencies = [
-        1,
-        2,
-        2,
-        3
-    ]
-
-    check_constraints_satisfied(genome)
+    # All checks pass
+    return True
