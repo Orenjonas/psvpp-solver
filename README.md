@@ -4,7 +4,7 @@ Implementing solvers for finding optimal planning schedules for periodic supply 
 
 Currently implementing a solution for finding the optimal amount of supply vessels and corresponding optimal sailing schedule for rigs based on supply demand.
 
-Based on the paper by Borthen, Thomas, et al.[[1]](#1).
+Based on the paper by Borthen, Thomas, et al. [[1]](#1).
 
 
 
