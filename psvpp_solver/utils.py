@@ -1,6 +1,49 @@
 import numpy as np
 
 
+def generate_visits(n_installations: int,
+                    n_days: int,
+                    days: np.array,
+                    service_frequencies=np.array([2, 3, 2, 2], dtype=np.int8),
+                    ) -> np.ndarray:
+    """Generate visit days for each installation by randomly assign an
+    installation to each installation i.
+
+    With three installations and 7 days visits array can look like this:
+
+        array([[False, False, False,  True, False, False, False],
+           [False,  True,  True, False, False, False,  True],
+           [ True, False, False,  True,  True,  True,  True]])
+
+
+    Args:
+        service_frequencies (np.array): Array of length n_insteallations with
+            required service frequencies for each installation.
+        n_installations (int): Number of installations
+        n_days (int): Number of days in period
+        days (np.array): Array of days starting with zero, equivalent to
+            range(n_days)
+
+    Returns:
+        np.ndarray: Boolean array of size (n_installations, n_days)
+                            with visit days set to True.
+    """
+    rng = np.random.default_rng()
+
+    # Initialize visits
+    visits = np.zeros((n_installations, n_days), dtype=bool)
+
+    # Randomly fill visits for each service frequency requirement
+    for i in range(n_installations):
+        visit_days = rng.choice(days,
+                                size=service_frequencies[i],
+                                replace=False
+                                )
+        visits[i, visit_days] = True
+
+    return visits
+
+
 def generate_visits_from_routes(routes: np.ndarray,
                                 n_installations: int,
                                 n_days_in_period: int) -> np.ndarray:

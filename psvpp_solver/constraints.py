@@ -5,7 +5,7 @@ def check_constraints_satisfied(
         routes: np.ndarray,
         visits: np.ndarray,
         departures: np.ndarray,
-        required_frequencies=np.array([2, 3, 2, 2]),
+        required_services=np.array([2, 3, 2, 2]),
         max_v_prepared=np.array([2, 2, 2, 1]),
         n_days_available=np.array([2, 2]),
         days_in_period=4,
@@ -42,7 +42,7 @@ def check_constraints_satisfied(
 
     Args:
         genome: TODO
-        required_frequencies
+        required_services
         max_installations_visits_in_a_day (int):  How many installations can
             be visited in a day during one voyage. A simplified constraint for
             distance of voyages.
@@ -52,11 +52,11 @@ def check_constraints_satisfied(
     # (2) Ensure the correct service frequency for each installation
 
     if (not np.array_equal(visits.sum(axis=1),  # visit frequency
-                           required_frequencies)):
+                           required_services)):
         # Abort if service frequency requirement not correct.
         print('Service frequency for installation(s)',
               np.where(~np.equal(visits.sum(axis=1),
-                       required_frequencies))[0] + 1,
+                       required_services))[0] + 1,
               'not correct')
         print("routes", routes,
               "visits", visits*1,
@@ -127,7 +127,7 @@ def check_constraints_satisfied(
         services = np.where(services)[0]
 
         # Min and max distance between visits
-        Pf_max = days_in_period // required_frequencies[inst]
+        Pf_max = days_in_period // required_services[inst]
         Pf_min = Pf_max - 1
 
         prev = services[-1] - days_in_period
