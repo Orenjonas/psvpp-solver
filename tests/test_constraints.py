@@ -23,7 +23,7 @@ def test_constraints():
     result = check_constraints_satisfied(routes,
                                          visits,
                                          departures,
-                                         required_frequencies=np.array(
+                                         required_services=np.array(
                                              [2, 3, 2, 2]),
                                          max_v_prepared=np.array([2, 2, 2, 1]),
                                          n_days_available=np.array([2, 3]),
