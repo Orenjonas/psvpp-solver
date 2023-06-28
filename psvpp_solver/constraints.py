@@ -4,10 +4,11 @@ import numpy as np
 # TODO: docstring and type hints
 # TODO: numba function?
 def check_departures_sufficiently_spread(visits,
-                                         days_in_period,
+                                         days_in_period: int,
                                          required_services,
-                                         routes,
-                                         departures,
+                                         routes="",
+                                         departures="",
+                                         print_output=False
                                          ):
     # (6) Make sure departures to each installation are properly spread
     for inst, services in enumerate(visits):
@@ -17,24 +18,30 @@ def check_departures_sufficiently_spread(visits,
 
         # Min and max distance between visits
         Pf_max = days_in_period // required_services[inst]
-        Pf_min = Pf_max - 1
+        # If division is even, space between services is equal
+        if Pf_max == n_days / required_services[inst]:
+            Pf_min = Pf_max = Pf_max - 1
+        else:
+            Pf_min = Pf_max - 1
 
         prev = services[-1] - days_in_period
         for day in services:
             # Check diff within constraints
             days_between = day - prev - 1  # Number of days between services
             if days_between < Pf_min or days_between > Pf_max:
-                print('day', day, 'prev', prev)
-                print('Services not sufficiently spread for  installation',
-                      inst + 1)
-                print("routes", routes,
-                      "visits", visits*1,
-                      "departures", departures*1,
-                      sep="\n"
-                      )
+                if print_output:
+                    print('day', day, 'prev', prev)
+                    print('Services not sufficiently spread for  installation',
+                          inst + 1)
+                    if routes != "":
+                        print("routes", routes, sep="\n")
+                    print("visits", visits*1, sep="\n")
+                    if departures != "":
+                        print("departures", departures*1, sep="\n")
                 return False
 
             prev = day
+        # TODO: Check spread between last and first service day
     return True
 
 
