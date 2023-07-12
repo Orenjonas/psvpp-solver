@@ -19,7 +19,7 @@ def check_departures_sufficiently_spread(visits,
         # Min and max distance between visits
         Pf_max = days_in_period // required_services[inst]
         # If division is even, space between services is equal
-        if Pf_max == n_days / required_services[inst]:
+        if Pf_max == days_in_period / required_services[inst]:
             Pf_min = Pf_max = Pf_max - 1
         else:
             Pf_min = Pf_max - 1
@@ -92,20 +92,22 @@ def check_max_sailing_days_constraint(n_days_available,
     return True
 
 
-def check_pax_pvs_prepared_constraint(departures,
+def check_max_pvs_prepared_constraint(departures,
                                       max_v_prepared,
-                                      routes,
-                                      visits,
+                                      routes=None,
+                                      visits=None,
+                                      verbose=False,
                                       ):
     # (4) Restict the number of PSVs prepared at the supply depot
     if np.any(departures.sum(axis=0) > max_v_prepared):
-        print('Too many departures on day(s))',
-              np.where(departures.sum(axis=0) > max_v_prepared)[0] + 1)
-        print("routes", routes,
-              "visits", visits*1,
-              "departures", departures*1,
-              sep="\n"
-              )
+        if verbose and routes is not None and visits is not None:
+            print('Too many departures on day(s))',
+                  np.where(departures.sum(axis=0) > max_v_prepared)[0] + 1)
+            print("routes", routes,
+                  "visits", visits*1,
+                  "departures", departures*1,
+                  sep="\n"
+                  )
         return False
     return True
 
@@ -186,7 +188,7 @@ def check_constraints_satisfied(
             be visited in a day during one voyage. A simplified constraint for
             distance of voyages.
         max_v_prepared (list[int]): How many vessels the installations can
-            prepare for departure in day i, list of len n_days.
+            prepare for departure in day i, list of len days_in_period.
     """
     if not check_correct_service_frequencies(visits,
                                              required_services,
@@ -200,7 +202,7 @@ def check_constraints_satisfied(
                                              departures):
         return False
 
-    if not check_pax_pvs_prepared_constraint(departures,
+    if not check_max_pvs_prepared_constraint(departures,
                                              max_v_prepared,
                                              routes,
                                              visits
