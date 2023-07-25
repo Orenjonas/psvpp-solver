@@ -2,6 +2,36 @@ import numpy as np
 import random
 
 
+def calculate_cost_of_route(routes: np.array,
+                            weekly_charter_costs: np.array,
+                            sailing_costs: np.array,
+                            distances: np.array) -> float:
+    """Calculate the planning periods (e.g. weekly) cost of a schedule based on
+    individual vessel costs and sailing distances.
+
+    Args:
+        routes (np.array): Sailing routes for the schedule.
+        weekly_charter_costs (np.array): One entry for each vessel.
+        sailing_costs (np.array): Cost per km. One entry for each vessel.
+        distances (np.array): n_installations x n_installations array.
+            Each pair contains distance between intallations.
+            E.g. installations[i, j] = km between installation i and j.
+    """
+    # Get index of distances for consecutive installation and depot visits by
+    #  padding routes with zero (depot) at the start and end of the schedule
+    #  and indexing distances by these padded routes shifted by one day.
+    zero_padding = np.zeros_like(routes[:, :, 0:1])  # Get correct dimensions
+    total_sailing_distance = np.sum(
+        distances[np.concatenate((routes, zero_padding), axis=2),
+                  np.concatenate((zero_padding, routes), axis=2)],
+        axis=(2, 1))
+
+    # Weekly cost of route is the sum of chartering cost for each vessel, and
+    # cost of sailing length for each vessel
+    return np.sum((weekly_charter_costs,
+                   np.dot(total_sailing_distance, sailing_costs)))
+
+
 def generate_visits(n_installations: int,
                     n_days_in_period: int,
                     required_services=np.array([2, 3, 2, 2], dtype=np.int8),
@@ -16,7 +46,7 @@ def generate_visits(n_installations: int,
                [ True, False, False,  True,  True,  True,  True]])
 
     Args:
-        required_services (np.array): Array of length n_insteallations with
+        required_services (np.array): Array of length n_installations with
             required service frequencies for each installation.
         n_installations (int): Number of installations
         n_days (int): Number of days in period
@@ -150,15 +180,15 @@ def generate_visits_from_routes(routes: np.ndarray,
                  ]
 
     # tour [PSV][day] -> installations [psv][installation]
-    routes = [[
-        [[1, 2, 0, 0], # [[1, 2], [],     [4, 3, 2], []],
-         [0, 0, 0, 0],
-         [4, 3, 2, 0]
-         [0, 0, 0, 0]]
-        [[0, 0, 0, 0], # [[],     [3, 4], [],        [1, 2]]
-         [3, 4, 0, 0],
-         [0, 0, 0, 0],
-         [1, 2, 0, 0]]
+    routes = [[[1, 2, 0, 0],
+               [0, 0, 0, 0],
+               [4, 3, 2, 0],
+               [0, 0, 0, 0]],
+
+              [[0, 0, 0, 0],
+               [3, 4, 0, 0],
+               [0, 0, 0, 0],
+               [1, 2, 0, 0]]]
 
             # installations [installation] -> day visited
     installation_visits = [
