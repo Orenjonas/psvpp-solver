@@ -2,10 +2,10 @@ import numpy as np
 import random
 
 
-def calculate_cost_of_route(routes: np.array,
-                            weekly_charter_costs: np.array,
-                            sailing_costs: np.array,
-                            distances: np.array) -> float:
+def calculate_cost_of_route(routes: np.ndarray,
+                            weekly_charter_costs: np.ndarray,
+                            sailing_costs: np.ndarray,
+                            distances: np.ndarray) -> float:
     """Calculate the planning periods (e.g. weekly) cost of a schedule based on
     individual vessel costs and sailing distances.
 
@@ -28,8 +28,8 @@ def calculate_cost_of_route(routes: np.array,
 
     # Weekly cost of route is the sum of chartering cost for each vessel, and
     # cost of sailing length for each vessel
-    return np.sum((weekly_charter_costs,
-                   np.dot(total_sailing_distance, sailing_costs)))
+    return np.sum(weekly_charter_costs) + np.dot(total_sailing_distance,
+                                                 sailing_costs)
 
 
 def generate_visits(n_installations: int,
@@ -168,6 +168,11 @@ def generate_departures_from_visits(visits: np.ndarray,
     #     print(visits*1)
 
     return departures
+
+
+def generate_rouutes_from_visits_and_departures(visits: np.ndarray,
+                                                departures: np.ndarray) -> np.ndarray:
+    pass
 
 
 def generate_visits_from_routes(routes: np.ndarray,

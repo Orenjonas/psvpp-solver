@@ -1,9 +1,39 @@
+from psvpp_solver.utils import calculate_cost_of_route
 from psvpp_solver.utils import generate_departures_from_routes
 from psvpp_solver.utils import generate_departures_from_visits
 from psvpp_solver.utils import generate_visits_from_routes
 from psvpp_solver.utils import generate_visits
 from psvpp_solver.constraints import check_constraints_satisfied
 import numpy as np
+
+
+def test_calculate_cost_of_route():
+
+    # Initiate
+    routes = np.array([[[1, 2, 0, 0],
+                        [0, 0, 0, 0],
+                        [4, 3, 2, 1],
+                        [0, 0, 0, 0]],
+                       [[0, 0, 0, 0],
+                        [3, 4, 0, 0],
+                        [0, 0, 0, 0],
+                        [1, 2, 0, 0]]])
+
+    distances = np.array([[0, 1, 2, 3, 4],
+                          [0, 0, 5, 6, 4],
+                          [0, 0, 0, 7, 4],
+                          [0, 0, 0, 0, 4],
+                          [0, 0, 0, 0, 0]])
+    distances = distances + distances.T
+
+    cost_of_route = calculate_cost_of_route(routes=routes,
+                                            weekly_charter_costs=np.array(
+                                                (100000.0,
+                                                 150000.0)),
+                                            sailing_costs=np.array((1000,
+                                                                    1200)),
+                                            distances=distances)
+    assert cost_of_route == 301800.0
 
 
 def test_generate_departures_from_visits():
