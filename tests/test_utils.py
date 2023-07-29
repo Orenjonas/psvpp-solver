@@ -3,6 +3,7 @@ from psvpp_solver.utils import generate_departures_from_routes
 from psvpp_solver.utils import generate_departures_from_visits
 from psvpp_solver.utils import generate_visits_from_routes
 from psvpp_solver.utils import generate_visits
+from psvpp_solver.utils import generate_routes_from_visits_and_departures
 from psvpp_solver.constraints import check_constraints_satisfied
 import numpy as np
 
@@ -87,6 +88,80 @@ def test_check_constraints_satisfied():
     assert result is True, "Constraints should be satisfied for:\n{}".format(
         routes
     )
+
+
+def test_generate_routes_from_visits_and_departures():
+
+    errors = []
+
+    visits = np.array([[1, 0, 0, 0, 1, 0, 0],
+                       [0, 1, 0, 0, 1, 0, 1],
+                       [0, 0, 1, 0, 0, 0, 1],
+                       [0, 0, 0, 1, 0, 0, 1]])
+    departures = np.array([[0, 1, 1, 0, 0, 0, 0],
+                           [1, 0, 0, 1, 1, 0, 1]])
+    generated_routes = generate_routes_from_visits_and_departures(
+        visits=visits,
+        departures=departures,
+        n_days_in_period=7)
+
+    routes_solution = np.array([[[0, 0, 0, 0],
+                                 [2, 0, 0, 0],
+                                 [3, 0, 0, 0],
+                                 [0, 0, 0, 0],
+                                 [0, 0, 0, 0],
+                                 [0, 0, 0, 0],
+                                 [0, 0, 0, 0]],
+
+                                [[1, 0, 0, 0],
+                                 [0, 0, 0, 0],
+                                 [0, 0, 0, 0],
+                                 [4, 0, 0, 0],
+                                 [1, 2, 0, 0],
+                                 [0, 0, 0, 0],
+                                 [2, 3, 4, 0]]], dtype=np.int8)
+
+    if not np.array_equal(generated_routes, routes_solution):
+        errors.append("Wrong routes generated. Input:\n\nvisits:\n{}\n\ndepartures:\n{}\n\nGenerated_routes:\n{}\n\nCorrect solution:\n{}".format(visits,
+                                                                                                                                                  departures,
+                                                                                                                                                  generated_routes,
+                                                                                                                                                  routes_solution))
+    # Test from some randomly generated departures and visits
+    for n_installations, n_vessels, max_vessels_prepared, required_services in zip(
+            [4, 7, 10],
+            [2, 3, 5],
+            [2, 3, 4],
+            [np.array([2, 3, 2, 2], dtype=np.int8),
+             np.array([2, 3, 3, 4, 2, 1, 2], dtype=np.int8),
+             np.array([2, 3, 3, 4, 2, 1, 2, 5, 3, 2], dtype=np.int8)]):
+        n_days_in_period = 7
+        visits = generate_visits(n_installations=n_installations,
+                                 n_days_in_period=n_days_in_period,
+                                 required_services=required_services,
+                                 max_vessels_prepared=max_vessels_prepared)
+        departures = generate_departures_from_visits(visits=visits,
+                                                     n_vessels=n_vessels,
+                                                     n_installations=n_installations,
+                                                     n_days_in_period=7)
+        routes = generate_routes_from_visits_and_departures(visits=visits,
+                                                            departures=departures,
+                                                            n_days_in_period=7)
+
+        if not (
+            np.array_equal(visits,
+                           generate_visits_from_routes(
+                               routes=routes,
+                               n_installations=len(visits),
+                               n_days_in_period=n_days_in_period)
+                           ) or (
+                np.array_equal(departures,
+                               generate_departures_from_routes(routes=routes)))
+        ):
+            errors.append("Wrong routes generated. Input:\n\nvisits:\n{}\n\ndepartures:\n{}\n\nGenerated_routes:\n{}".format(
+                visits, departures, routes))
+
+    # assert no error message has been registered, else print messages
+    assert not errors, "{}".format("\n\n".join(errors))
 
 
 def test_generate_departures_from_routes():

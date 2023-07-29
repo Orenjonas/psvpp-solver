@@ -4,7 +4,7 @@ TODO:
 - Initial population
     1. [x] Generate visits p. 132
     2. [x] Generate departures p. 133
-    3. [ ] Generate route / tour. generate_route_from_visits...
+    3. [x] Generate route / tour. generate_route_from_visits...
     4. [ ] Local search based education sect. 4.6
     5. [ ] Assign individual to sub-population
 - Penalized cost page 131

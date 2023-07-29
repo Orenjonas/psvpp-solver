@@ -1,5 +1,6 @@
 import numpy as np
 import random
+from itertools import chain
 
 
 def calculate_cost_of_route(routes: np.ndarray,
@@ -16,6 +17,9 @@ def calculate_cost_of_route(routes: np.ndarray,
         distances (np.array): n_installations x n_installations array.
             Each pair contains distance between intallations.
             E.g. installations[i, j] = km between installation i and j.
+    Returns:
+        np.ndarray: Array of floats, each representing the cost for the
+            corresponding vessel.
     """
     # Get index of distances for consecutive installation and depot visits by
     #  padding routes with zero (depot) at the start and end of the schedule
@@ -119,6 +123,25 @@ def generate_departures_from_visits(visits: np.ndarray,
                                     n_vessels: int,
                                     n_installations: int,
                                     n_days_in_period: int) -> np.ndarray:
+    """Generate departures for each vessel, ensuring a departure each day that
+    requires a visit to a station.
+
+    With four vessels and seven days, departures can look like this:
+
+        array([[ True, False, False, False,  True, False, False],
+               [ True, False, False,  True, False,  True, False],
+               [False,  True, False, False, False,  True, False],
+               [False,  True, False, False, False,  True, False]])
+
+    Args:
+        visits (np.ndarray): a
+        n_vessels (int): a
+        n_installations (int): a
+        n_days_in_period (int): a
+
+    Retuns:
+        np.ndarray: Boolean array of shape n_vessels, n_days.
+        """
 
     # Initiate departures
     departures = np.zeros(shape=(n_vessels, n_days_in_period),
@@ -170,11 +193,63 @@ def generate_departures_from_visits(visits: np.ndarray,
     return departures
 
 
-def generate_rouutes_from_visits_and_departures(visits: np.ndarray,
-                                                departures: np.ndarray) -> np.ndarray:
-    pass
+# TODO: Update docstring
+def generate_routes_from_visits_and_departures(visits: np.ndarray,
+                                               departures: np.ndarray,
+                                               n_days_in_period: int) -> np.ndarray:
+    """Generate routes from visits and departures. The routes contains the
+    index of an installation visited by the given vessel on the given day.
+
+    Routes can look like this
+    array([[[1, 2, 0, 0],
+            [0, 0, 0, 0],
+            [4, 3, 2, 0],
+            [0, 0, 0, 0]],
+
+           [[0, 0, 0, 0],
+            [3, 4, 0, 0],
+            [0, 0, 0, 0],
+            [1, 2, 0, 0]]])
+
+    Args:
+
+    Returns:
+        np.ndarray: Array of shape (n_vessels, n_days, n_installations)
+        containing the index of the installation visited by the given vessel
+        on the given day"""
+    # Assign vessel departures to visits
+
+    # Initiate
+    routes = np.zeros(shape=(len(departures), n_days_in_period, len(visits)),
+                      dtype=np.int8)
+
+    # Get the index of vessels and index of days they depart
+    which_vessel, departure_days = np.where(departures)
+
+    # Get visit days, and which installations are visited a given day
+    # TODO: rename
+    visit_days, installations_visited = np.where(visits[:, departure_days].T)
+    # Installation number is one more than index (0 is depot)
+    installations_visited = installations_visited + 1
+
+    # Get number of repeated visit days (several visits in a day) for creation
+    # of indexes for these visits
+    _, counts = np.unique(visit_days, return_counts=True)
+
+    # Get index of installation visits. Start at zero and count up until the
+    # number of visits for each vessel and day using arange()
+    installation_order_index = np.fromiter(
+        chain.from_iterable(np.arange(x) for x in counts), dtype=np.int8)
+
+    # Duplicate vessel and days with visit_days to set the appropriate indexes
+    routes[which_vessel[visit_days],
+           departure_days[visit_days],
+           installation_order_index] = installations_visited
+
+    return routes
 
 
+# TODO: Update docstring
 def generate_visits_from_routes(routes: np.ndarray,
                                 n_installations: int,
                                 n_days_in_period: int) -> np.ndarray:
