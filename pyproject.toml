@@ -26,6 +26,7 @@ ipython = "^8.13.1"
 ptpython = "^3.0.23"
 ptipython = "^1.0.1"
 jupyter = "^1.0.0"
+debugpy = "^1.6.7"
 
 [build-system]
 requires = ["poetry-core"]
